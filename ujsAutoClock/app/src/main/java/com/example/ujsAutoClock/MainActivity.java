@@ -8,8 +8,10 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
@@ -71,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
         Log("->提示：为了保证定时任务效果，建议给予自启动权限");
         Log("->提示：通知推送效果可以手动调节，可以手动测试");
         Log("->提示：定时任务受Android限制，对于不同系统会存在几分钟左右延时");
+        Log("->提示：一天请不要测试太多次，否则OCR服务器可能会拒绝你的访问，第二天恢复");
+        Log("");
         if (setting_time != null) {
             button_cancle.setVisibility(View.VISIBLE);
             Log("定时任务已设置！");
@@ -115,7 +119,15 @@ public class MainActivity extends AppCompatActivity {
                     calendar.set(Calendar.SECOND, 0);
                     alarmMgr.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, alarmIntent);
                     button_cancle.setVisibility(View.VISIBLE);
+                    //重启恢复
+                    ComponentName receiver = new ComponentName(MainActivity.this, BootReceiver.class);
+                    PackageManager pm = getPackageManager();
+                    pm.setComponentEnabledSetting(receiver,
+                            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                            PackageManager.DONT_KILL_APP);
                     Log("定时任务已设置！");
+                    Log("i: 重启监听已开启，将自动恢复定时任务");
+                    Log("i: 强烈建议开启APP自启动权限，否则在部分系统上可能会失效");
                     java.util.Date date = calendar.getTime();
                     Log(String.format("下次运行时间：%tF %tT%n", date, date));
                 }
@@ -143,7 +155,14 @@ public class MainActivity extends AppCompatActivity {
                 setting_time = null;
                 button_selectTime.setText("未设置");
                 button_cancle.setVisibility(View.INVISIBLE);
+                //取消重启监听
+                ComponentName receiver = new ComponentName(MainActivity.this, BootReceiver.class);
+                PackageManager pm = getPackageManager();
+                pm.setComponentEnabledSetting(receiver,
+                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                        PackageManager.DONT_KILL_APP);
                 saveSettings(0);
+                Log("i: 重启监听已关闭");
                 Toast.makeText(MainActivity.this, "取消成功！", Toast.LENGTH_SHORT).show();
             }
         });

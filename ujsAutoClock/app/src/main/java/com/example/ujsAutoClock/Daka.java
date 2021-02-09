@@ -56,10 +56,11 @@ public class Daka {
     private static final String serviceURL = "http://yun.ujs.edu.cn/xxhgl/yqsb/index";
     private String username;
     private String password;
+    private String AESpassword;
     private int retryCount;
     private static String LoginGetUrl = "https://pass.ujs.edu.cn/cas/login";
     private static String LoginPostUrl = "https://pass.ujs.edu.cn/cas/login?service=" + serviceURL;
-    private static String _pwdDefaultEncryptSalt;
+    private String _pwdDefaultEncryptSalt;
     private String captchaBase64;
     private String captcha;
     private String OCR_uuid;
@@ -68,7 +69,7 @@ public class Daka {
     private HashMap<String, String> postForm;
     private HashMap<String, String> HealthForm;
     private FormBody.Builder postHealthForm;
-    private static OkHttpClient client;
+    private OkHttpClient client;
 
     public Daka(String username, String password, Context context, TextView textView,NotificationManager notiManager) {
         this.username = username;
@@ -124,8 +125,12 @@ public class Daka {
             this.retryCount += 1;
             this.GetLoginHTML();
         } else {
-            //重试次数过多
-            Notification("错误", "运行时重试次数过多，请检查网络连接是否正常");
+            if(progress.startsWith("onOCR")){
+                Notification("错误", "OCR服务异常");
+            }else {
+                //重试次数过多
+                Notification("错误", "运行时重试次数过多，请检查网络连接是否正常");
+            }
         }
     }
 
@@ -181,10 +186,10 @@ public class Daka {
                             int start = result.indexOf(searchStr);
                             int end = result.indexOf("\"", start + searchStr.length());
                             _pwdDefaultEncryptSalt = result.substring(start + searchStr.length(), end);
-                            password = AESUtils.encryptAES(password, _pwdDefaultEncryptSalt);
-                            Log.i("i", "password encrypted by AES = " + password);
+                            AESpassword = AESUtils.encryptAES(password, _pwdDefaultEncryptSalt);
+                            Log.i("i", "password encrypted by AES = " + AESpassword);
                             if (mode == Mode.Test) {
-                                Notification("i", "password encrypted by AES = " + password);
+                                Notification("i", "password encrypted by AES = " + AESpassword);
                             }
                             isNeedCaptcha();
                         }
@@ -476,7 +481,7 @@ public class Daka {
         String progress = "PostToLogin";
         FormBody.Builder formBuilder = new FormBody.Builder()
                 .add("username", username)
-                .add("password", password);
+                .add("password", AESpassword);
         if (!captcha.isEmpty()) {
             formBuilder.add("captchaResponse", captcha);
         }
