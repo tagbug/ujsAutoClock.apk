@@ -1,0 +1,2 @@
+include ':app'
+rootProject.name = "ujs自动健康打卡"

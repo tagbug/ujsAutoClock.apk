@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">ujs自动健康打卡</string>
+    <string name="tip_username">用户名：</string>
+    <string name="tip_password">密码：</string>
+    <string name="tip_autotime">自动打卡时间：</string>
+    <string name="input_default">未设置</string>
+    <string name="button_test">打卡测试</string>
+    <string name="button_save">保存执行</string>
+    <string name="button_cancle">取消定时任务</string>
+</resources>
