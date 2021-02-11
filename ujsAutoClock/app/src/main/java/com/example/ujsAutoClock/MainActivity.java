@@ -3,6 +3,7 @@ package com.example.ujsAutoClock;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -15,12 +16,16 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import com.example.ujsAutoClock.Utils.MobileInfoUtils;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -47,6 +52,27 @@ public class MainActivity extends AppCompatActivity {
     private TextView text_log;
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        MobileInfoUtils miu = new MobileInfoUtils();
+        switch (item.getItemId()) {
+            case R.id.menu_DetailInterface:
+                miu.jumpDetailInterface(MainActivity.this);
+                return true;
+            case R.id.menu_StartInterface:
+                miu.jumpStartInterface(MainActivity.this);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -61,18 +87,22 @@ public class MainActivity extends AppCompatActivity {
         try {
             settings = loadSettings().split("\n");
             for (int i = 0; i < settings.length; i++) {
-                if (i == 2) {
-                    button_selectTime.setText(setting_time = settings[2]);
-                } else {
-                    inputs[i].setText(settings[i]);
+                if (settings[i].equals("null")) {
+                    settings[i] = null;
+                }
+                if (settings[i] != null) {
+                    if (i == 2) {
+                        button_selectTime.setText(setting_time = settings[2]);
+                    } else {
+                        inputs[i].setText(settings[i]);
+                    }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Log("->提示：为了保证定时任务效果，建议给予自启动权限");
+        Log("->提示：为了保证定时任务效果，建议给予自启动权限，点击右上角有三个点导航到设置页");
         Log("->提示：通知推送效果可以手动调节，可以手动测试");
-        Log("->提示：定时任务受Android限制，对于不同系统会存在几分钟左右延时");
         Log("->提示：一天请不要测试太多次，否则OCR服务器可能会拒绝你的访问，第二天恢复");
         Log("");
         if (setting_time != null) {
@@ -107,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
                     int minute = Integer.parseInt(setting_time.split(":")[1]);
                     alarmMgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                     Intent intent = new Intent(MainActivity.this, AutoTimer.class);
+                    intent.setPackage(MainActivity.this.getPackageName());
                     alarmIntent = PendingIntent.getBroadcast(MainActivity.this, 0, intent, 0);
                     alarmMgr.cancel(alarmIntent);
                     Calendar calendar = Calendar.getInstance();
@@ -127,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
                             PackageManager.DONT_KILL_APP);
                     Log("定时任务已设置！");
                     Log("i: 重启监听已开启，将自动恢复定时任务");
-                    Log("i: 强烈建议开启APP自启动权限，否则在部分系统上可能会失效");
+                    Log("i: 强烈建议给予APP自启动权限，否则在部分系统上可能会失效");
                     java.util.Date date = calendar.getTime();
                     Log(String.format("下次运行时间：%tF %tT%n", date, date));
                 }
@@ -268,4 +299,5 @@ public class MainActivity extends AppCompatActivity {
             mNotificationManager.createNotificationChannel(mChannel);//创建通知渠道
         }
     }
+
 }

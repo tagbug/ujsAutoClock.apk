@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
@@ -62,6 +63,7 @@ public class AutoTimer extends BroadcastReceiver {
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.i("i","收到广播");
         try {
             mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             addNotificationChannel();
@@ -69,13 +71,13 @@ public class AutoTimer extends BroadcastReceiver {
             Daka daka = new Daka(settings[0], settings[1], context, mNotificationManager);
             alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             Intent aintent = new Intent(context, AutoTimer.class);
+            aintent.setPackage(context.getPackageName());
             alarmIntent = PendingIntent.getBroadcast(context, 0, aintent, 0);
             alarmMgr.cancel(alarmIntent);
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(System.currentTimeMillis());
             calendar.set(Calendar.DATE, calendar.get(Calendar.DATE) + 1);
             alarmMgr.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
-            Thread.sleep(60 * 1000);
         } catch (IOException e) {
             Notification(context, "错误：设置文件不存在或读取失败！");
         } catch (Exception ee) {

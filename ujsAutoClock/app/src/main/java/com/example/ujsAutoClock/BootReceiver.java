@@ -77,6 +77,7 @@ public class BootReceiver extends BroadcastReceiver {
                 int minute = Integer.parseInt(setting_time.split(":")[1]);
                 alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
                 Intent aintent = new Intent(context, AutoTimer.class);
+                aintent.setPackage(context.getPackageName());
                 alarmIntent = PendingIntent.getBroadcast(context, 0, aintent, 0);
                 alarmMgr.cancel(alarmIntent);
                 Calendar calendar = Calendar.getInstance();
